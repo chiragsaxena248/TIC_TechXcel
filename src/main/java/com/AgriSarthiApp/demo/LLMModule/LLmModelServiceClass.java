@@ -4,6 +4,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class LLmModelServiceClass {
@@ -20,16 +25,29 @@ public class LLmModelServiceClass {
     }
     public ResponseEntity<?> askLLM(String prompt){
         try {
+            ObjectMapper mapper = new ObjectMapper();
 
+            Map<String, Object> request = new HashMap<>();
 
-        String requestBody = """
-        {
-          "model": "Llama-3.3-Swallow-70B-Instruct-v0.4",
-          "messages": [
-            {"role": "user", "content": "%s"}
-          ]
-        }
-        """.formatted(prompt);
+            request.put("model", "Meta-Llama-3.1-8B-Instruct");
+
+            Map<String, String> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", prompt);
+
+            request.put("messages", List.of(message));
+            request.put("temperature", 0.7);
+
+            String requestBody = mapper.writeValueAsString(request);
+
+//        String requestBody = """
+//        {
+//          "model": "Llama-3.3-Swallow-70B-Instruct-v0.4",
+//          "messages": [
+//            {"role": "user", "content": "%s"}
+//          ]
+//        }
+//        """.formatted(prompt);
         return  ResponseEntity.ok(webClient.post()
 
                 .header("Authorization","Bearer "+apiKeys)
