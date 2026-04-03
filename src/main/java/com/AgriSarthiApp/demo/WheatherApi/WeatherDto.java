@@ -9,4 +9,5 @@ import org.springframework.stereotype.Component;
 @Setter
 public class WeatherDto {
     private String city;
+
 }
