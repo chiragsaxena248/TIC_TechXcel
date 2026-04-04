@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "AgriSaarthi AI",
+    "slug": "agrisaarthiai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.anonymous.agrisaarthiai"
+    },
+    "web": {},
+    "plugins": [
+      "react-native-localize"
+    ]
+  }
+}
