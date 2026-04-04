@@ -13,12 +13,14 @@ public class RegistrationController {
     RegistrationService registrationService;
     @PostMapping("/register")
     public ResponseEntity<?> registerNewUser(@RequestBody UserPojo newUser){
+
          return registrationService.registerUser(newUser);
     }
 
     @GetMapping("/login")
-    public ResponseEntity<?> userLogin(@RequestBody UserPojo user){
-        return registrationService.loginUser(user);
+    public ResponseEntity<?> userLogin(@RequestBody LoginDtoClass loginDetails){
+
+        return registrationService.loginUser(loginDetails);
     }
 
 }
