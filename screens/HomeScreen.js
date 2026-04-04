@@ -1,16 +1,69 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, currentTheme }) {
   const { t } = useTranslation();
 
-  // Temporary default theme until full theme system is added
-  const isDark = false;
+  // ✅ Real dark mode support
+  const isDark = currentTheme === "dark";
+
+  // ✅ Safe default weather state
+  const [weather, setWeather] = useState({
+    city: "Bhopal",
+    temperature: "--",
+    humidity: "--",
+    condition: "Tap refresh",
+  });
+
+  const [loadingWeather, setLoadingWeather] = useState(false);
+  const [weatherError, setWeatherError] = useState(false);
 
   const bg = isDark ? "#121212" : "#F8FAF7";
   const cardBg = isDark ? "#1E1E1E" : "#ffffff";
   const text = isDark ? "#ffffff" : "#111111";
   const subText = isDark ? "#bbbbbb" : "#666666";
+
+  const fetchWeather = async () => {
+    try {
+      setLoadingWeather(true);
+      setWeatherError(false);
+
+      // ⚠️ Replace this later with your real backend API
+      const response = await fetch("YOUR_WEATHER_API_URL_HERE");
+
+      if (!response.ok) {
+        throw new Error("Weather API failed");
+      }
+
+      const data = await response.json();
+
+      setWeather({
+        city: data.city || "Bhopal",
+        temperature: data.temperature || "--",
+        humidity: data.humidity || "--",
+        condition: data.condition || "N/A",
+      });
+    } catch (error) {
+      console.log("Weather API Error:", error);
+      setWeatherError(true);
+
+      setWeather({
+        city: "Bhopal",
+        temperature: "--",
+        humidity: "--",
+        condition: "Unavailable",
+      });
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
 
   return (
     <ScrollView
@@ -32,6 +85,7 @@ export default function HomeScreen({ navigation }) {
         {t("dashboard_title")}
       </Text>
 
+      {/* WEATHER CARD */}
       <View
         style={{
           backgroundColor: cardBg,
@@ -43,11 +97,39 @@ export default function HomeScreen({ navigation }) {
         <Text style={{ fontSize: 18, fontWeight: "bold", color: text }}>
           🌤 {t("today_weather")}
         </Text>
-        <Text style={{ marginTop: 6, color: subText }}>
-          Bhopal • 31°C • Humidity 68%
-        </Text>
+
+        {loadingWeather ? (
+          <View style={{ marginTop: 10 }}>
+            <ActivityIndicator size="small" color="#2E7D32" />
+            <Text style={{ marginTop: 6, color: subText }}>
+              Loading weather...
+            </Text>
+          </View>
+        ) : (
+          <Text style={{ marginTop: 6, color: weatherError ? "red" : subText }}>
+            {weather.city} • {weather.temperature}°C • Humidity{" "}
+            {weather.humidity}% • {weather.condition}
+          </Text>
+        )}
+
+        {/* Refresh Weather Button */}
+        <TouchableOpacity
+          style={{
+            marginTop: 12,
+            backgroundColor: "#2E7D32",
+            paddingVertical: 10,
+            borderRadius: 12,
+            alignItems: "center",
+          }}
+          onPress={fetchWeather}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            Refresh Weather
+          </Text>
+        </TouchableOpacity>
       </View>
 
+      {/* MAIN CARDS */}
       <TouchableOpacity
         style={cardStyle(isDark ? "#1B5E20" : "#E8F5E9")}
         onPress={() => navigation.navigate("CropRecommendation")}
@@ -84,6 +166,7 @@ export default function HomeScreen({ navigation }) {
         </Text>
       </TouchableOpacity>
 
+      {/* QUICK ACCESS */}
       <Text
         style={{
           fontSize: 20,
@@ -116,10 +199,7 @@ export default function HomeScreen({ navigation }) {
 
       <TouchableOpacity
         style={[smallBtn, { backgroundColor: cardBg }]}
-        onPress={() => {
-          console.log("Settings button pressed");
-          navigation.navigate("Settings");
-        }}
+        onPress={() => navigation.navigate("Settings")}
       >
         <Text style={[smallBtnText, { color: text }]}>⚙ {t("settings")}</Text>
       </TouchableOpacity>

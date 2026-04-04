@@ -20,6 +20,7 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
   const [cropName, setCropName] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
     try {
@@ -46,22 +47,56 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
     }
   };
 
-  const handleDetect = () => {
+  const handleDetect = async () => {
     if (!image || !cropName.trim() || !problemDescription.trim()) {
       Alert.alert(t("missing_input"), t("disease_missing_input"));
       return;
     }
 
-    setResult({
-      disease: "Leaf Spot",
-      confidence: "95%",
-      solution: t("disease_solution"),
-    });
+    try {
+      setLoading(true);
 
-    Alert.alert(
-      t("detection_submitted"),
-      `${t("crop_name")}: ${cropName}\n${t("problem")}: ${problemDescription}`,
-    );
+      const formData = new FormData();
+
+      formData.append("cropName", cropName.trim());
+      formData.append("problemDescription", problemDescription.trim());
+
+      formData.append("image", {
+        uri: image.uri,
+        name: "crop-image.jpg",
+        type: "image/jpeg",
+      });
+
+      // 🔥 API CALL STARTS HERE
+      const response = await fetch("YOUR_API_URL_HERE", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      // Expected backend response:
+      // {
+      //   disease: "Leaf Spot",
+      //   confidence: "95%",
+      //   solution: "Apply fungicide and remove infected leaves"
+      // }
+
+      setResult({
+        disease: data.disease,
+        confidence: data.confidence || "N/A",
+        solution: data.solution || "",
+      });
+    } catch (error) {
+      console.error("Disease Detection API Error:", error);
+      Alert.alert("Error", "Failed to detect disease");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,7 +164,9 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
       />
 
       <TouchableOpacity style={styles.button} onPress={handleDetect}>
-        <Text style={styles.buttonText}>{t("detect_disease")}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Detecting..." : t("detect_disease")}
+        </Text>
       </TouchableOpacity>
 
       {result && (

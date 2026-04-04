@@ -21,8 +21,10 @@ export default function IrrigationScreen({ currentTheme }) {
   const [waterAvailability, setWaterAvailability] = useState("");
   const [waterSource, setWaterSource] = useState("");
   const [otherWaterUse, setOtherWaterUse] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !landSize ||
       city.trim() === "" ||
@@ -36,7 +38,7 @@ export default function IrrigationScreen({ currentTheme }) {
     }
 
     const payload = {
-      landSize: landSize.trim(),
+      landSize: Number(landSize),
       city: city.trim(),
       crop: selectedCrop,
       waterAvailability,
@@ -44,12 +46,42 @@ export default function IrrigationScreen({ currentTheme }) {
       otherWaterUse: otherWaterUse.trim(),
     };
 
-    console.log("Irrigation Input:", payload);
+    try {
+      setLoading(true);
 
-    Alert.alert(
-      t("input_submitted"),
-      `${t("land_size")}: ${landSize} acres\n${t("city_area")}: ${city}\n${t("crop_name")}: ${selectedCrop}\n${t("water_availability")}: ${waterAvailability}\n${t("water_source")}: ${waterSource}\n${t("other_water_use")}: ${otherWaterUse}`,
-    );
+      // 🔥 API CALL STARTS HERE
+      const response = await fetch("YOUR_API_URL_HERE", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      // Expected backend response:
+      // {
+      //   irrigationAdvice: "Water every 3 days",
+      //   waterSavingTip: "Use drip irrigation",
+      //   urgency: "Medium"
+      // }
+
+      setResult({
+        irrigationAdvice: data.irrigationAdvice || "",
+        waterSavingTip: data.waterSavingTip || "",
+        urgency: data.urgency || "N/A",
+      });
+    } catch (error) {
+      console.error("Irrigation API Error:", error);
+      Alert.alert("Error", "Failed to fetch irrigation advice");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -194,8 +226,19 @@ export default function IrrigationScreen({ currentTheme }) {
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{t("submit")}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Loading..." : t("submit")}
+        </Text>
       </TouchableOpacity>
+
+      {result && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultTitle}>💧 {t("irrigation_advisory")}</Text>
+          <Text style={styles.resultAdvice}>{result.irrigationAdvice}</Text>
+          <Text style={styles.resultUrgency}>Urgency: {result.urgency}</Text>
+          <Text style={styles.resultTip}>{result.waterSavingTip}</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -249,5 +292,36 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 17,
     fontWeight: "bold",
+  },
+  resultCard: {
+    backgroundColor: "#E8F5E9",
+    padding: 20,
+    borderRadius: 18,
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  resultTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+    color: "#1B5E20",
+  },
+  resultAdvice: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2E7D32",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  resultUrgency: {
+    fontSize: 16,
+    color: "#444",
+    marginBottom: 8,
+  },
+  resultTip: {
+    fontSize: 15,
+    color: "#444",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });

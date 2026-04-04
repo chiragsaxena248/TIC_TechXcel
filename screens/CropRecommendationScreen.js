@@ -21,8 +21,9 @@ export default function CropRecommendationScreen({ currentTheme }) {
   const [soilType, setSoilType] = useState("");
   const [demandCrop, setDemandCrop] = useState("");
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handlePredict = () => {
+  const handlePredict = async () => {
     if (
       !landSize ||
       !city ||
@@ -35,45 +36,49 @@ export default function CropRecommendationScreen({ currentTheme }) {
       return;
     }
 
-    let recommendedCrop = "Wheat";
-    let reason = "";
+    try {
+      setLoading(true);
 
-    if (
-      season === "kharif" &&
-      waterFacility === "above_average" &&
-      (soilType === "black" || soilType === "alluvial")
-    ) {
-      recommendedCrop = "Rice";
-      reason = t("crop_reason_rice");
-    } else if (
-      season === "rabi" &&
-      waterFacility !== "below_average" &&
-      (soilType === "loamy" || soilType === "alluvial")
-    ) {
-      recommendedCrop = "Wheat";
-      reason = t("crop_reason_wheat");
-    } else if (
-      waterFacility === "below_average" &&
-      (soilType === "sandy" || soilType === "red")
-    ) {
-      recommendedCrop = "Millet";
-      reason = t("crop_reason_millet");
-    } else if (parseFloat(landSize) < 5 && waterFacility !== "below_average") {
-      recommendedCrop = "Vegetables";
-      reason = t("crop_reason_vegetables");
-    } else if (demandCrop.toLowerCase().includes("soybean")) {
-      recommendedCrop = "Soybean";
-      reason = t("crop_reason_soybean");
-    } else {
-      recommendedCrop = demandCrop;
-      reason = t("crop_reason_general");
+      // 🔥 API CALL STARTS HERE
+      const response = await fetch("YOUR_API_URL_HERE", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          landSize: Number(landSize),
+          city: city.trim(),
+          season,
+          waterFacility,
+          soilType,
+          demandCrop,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      // Expected backend response format:
+      // {
+      //   crop: "Wheat",
+      //   confidence: "90%",
+      //   reason: "Suitable due to soil and season"
+      // }
+
+      setResult({
+        crop: data.crop,
+        confidence: data.confidence || "N/A",
+        reason: data.reason || "",
+      });
+    } catch (error) {
+      console.error("API Error:", error);
+      Alert.alert("Error", "Failed to fetch recommendation");
+    } finally {
+      setLoading(false);
     }
-
-    setResult({
-      crop: recommendedCrop,
-      confidence: "93%",
-      reason,
-    });
   };
 
   return (
@@ -177,7 +182,9 @@ export default function CropRecommendationScreen({ currentTheme }) {
       />
 
       <TouchableOpacity style={styles.button} onPress={handlePredict}>
-        <Text style={styles.buttonText}>{t("get_recommendation")}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Loading..." : t("get_recommendation")}
+        </Text>
       </TouchableOpacity>
 
       {result && (
