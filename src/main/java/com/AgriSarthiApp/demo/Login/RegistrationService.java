@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Optional;
+
 
 @Service
 public class RegistrationService {
@@ -18,10 +18,11 @@ public class RegistrationService {
 
       if(registrationRepo.existsById(user.getMobileNo())) return ResponseEntity.status(401).body("User already Exist:");
       registrationRepo.save(user);
-      return ResponseEntity.ok("Successfully Registered");
+
+      return ResponseEntity.ok("Success,welcomee to agriSarthi:");
     }
 
-    public ResponseEntity<?> loginUser(@RequestBody UserPojo userlogin){
+    public ResponseEntity<?> loginUser(@RequestBody LoginDtoClass userlogin){
 
         if(!registrationRepo.existsById(userlogin.getMobileNo())) return ResponseEntity.status(401).body("User not exists:");
          else{return  ResponseEntity.ok("Welcomeback user:");}

@@ -14,4 +14,8 @@ public class UserPojo {
     @Id
     private String mobileNo;
     private String Name;
+    private  String adress;
+    private String password;
+    private String landInAcre;
+
 }
