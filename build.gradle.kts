@@ -12,6 +12,9 @@ java {
 		languageVersion = JavaLanguageVersion.of(23)
 	}
 }
+tasks.bootJar {
+	archiveFileName.set("Agri-Saarthi.jar")
+}
 
 repositories {
 	mavenCentral()
