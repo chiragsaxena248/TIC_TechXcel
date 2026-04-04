@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { detectDisease } from "../src/services/api";
 
 export default function DiseaseDetectionScreen({ currentTheme }) {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
       }
     } catch (error) {
       console.log("Image Picker Error:", error);
-      Alert.alert(t("error"), t("could_not_pick_image"));
+      Alert.alert(t("error") || "Error", t("could_not_pick_image"));
     }
   };
 
@@ -56,44 +57,20 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
     try {
       setLoading(true);
 
-      const formData = new FormData();
+      const payload = {
+        cropName: cropName.trim(),
+        problemDescription: problemDescription.trim(),
+        imageUri: image?.uri || null,
+      };
 
-      formData.append("cropName", cropName.trim());
-      formData.append("problemDescription", problemDescription.trim());
-
-      formData.append("image", {
-        uri: image.uri,
-        name: "crop-image.jpg",
-        type: "image/jpeg",
-      });
-
-      // 🔥 API CALL STARTS HERE
-      const response = await fetch("YOUR_API_URL_HERE", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("API request failed");
-      }
-
-      const data = await response.json();
-
-      // Expected backend response:
-      // {
-      //   disease: "Leaf Spot",
-      //   confidence: "95%",
-      //   solution: "Apply fungicide and remove infected leaves"
-      // }
-
-      setResult({
-        disease: data.disease,
-        confidence: data.confidence || "N/A",
-        solution: data.solution || "",
-      });
+      const resultData = await detectDisease(payload);
+      setResult(resultData);
     } catch (error) {
       console.error("Disease Detection API Error:", error);
-      Alert.alert("Error", "Failed to detect disease");
+      Alert.alert(
+        t("error") || "Error",
+        t("error_fetching_detection") || "Failed to detect disease",
+      );
     } finally {
       setLoading(false);
     }
@@ -107,8 +84,9 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
       ]}
     >
       <Text style={[styles.title, { color: isDark ? "#81C784" : "#1B5E20" }]}>
-        🍃 {t("disease_detection")}
+        {t("Disease Detection")}
       </Text>
+
       <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#4e6e50" }]}>
         {t("disease_detection_sub")}
       </Text>
@@ -126,6 +104,7 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2E7D32" }]}>
         {t("crop_name")}
       </Text>
+
       <TextInput
         style={[
           styles.input,
@@ -144,6 +123,7 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2E7D32" }]}>
         {t("describe_problem")}
       </Text>
+
       <TextInput
         style={[
           styles.input,
@@ -165,7 +145,7 @@ export default function DiseaseDetectionScreen({ currentTheme }) {
 
       <TouchableOpacity style={styles.button} onPress={handleDetect}>
         <Text style={styles.buttonText}>
-          {loading ? "Detecting..." : t("detect_disease")}
+          {loading ? t("detecting") || "Detecting..." : t("detect_disease")}
         </Text>
       </TouchableOpacity>
 

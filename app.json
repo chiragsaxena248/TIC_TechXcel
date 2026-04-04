@@ -17,6 +17,11 @@
     "web": {},
     "plugins": [
       "react-native-localize"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "30652e81-d279-483a-ad48-192aaef3f7f0"
+      }
+    }
   }
 }

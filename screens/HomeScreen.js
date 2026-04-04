@@ -1,4 +1,5 @@
-import { useState } from "react";
+import * as Location from "expo-location";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -7,14 +8,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getWeather } from "../src/services/api";
 
 export default function HomeScreen({ navigation, currentTheme }) {
   const { t } = useTranslation();
-
-  // ✅ Real dark mode support
   const isDark = currentTheme === "dark";
 
-  // ✅ Safe default weather state
+  const hasFetchedWeather = useRef(false);
+
   const [weather, setWeather] = useState({
     city: "Bhopal",
     temperature: "--",
@@ -31,21 +32,27 @@ export default function HomeScreen({ navigation, currentTheme }) {
   const subText = isDark ? "#bbbbbb" : "#666666";
 
   const fetchWeather = async () => {
+    if (loadingWeather) return; // prevent duplicate calls
+
     try {
       setLoadingWeather(true);
       setWeatherError(false);
 
-      // ⚠️ Replace this later with your real backend API
-      const response = await fetch("YOUR_WEATHER_API_URL_HERE");
+      let lat = null;
+      let lon = null;
 
-      if (!response.ok) {
-        throw new Error("Weather API failed");
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status === "granted") {
+        const location = await Location.getCurrentPositionAsync({});
+        lat = location.coords.latitude;
+        lon = location.coords.longitude;
       }
 
-      const data = await response.json();
+      const data = await getWeather(lat, lon);
 
       setWeather({
-        city: data.city || "Bhopal",
+        city: data.city || "Unknown Location",
         temperature: data.temperature || "--",
         humidity: data.humidity || "--",
         condition: data.condition || "N/A",
@@ -58,20 +65,27 @@ export default function HomeScreen({ navigation, currentTheme }) {
         city: "Bhopal",
         temperature: "--",
         humidity: "--",
-        condition: "Unavailable",
+        condition: t("weather_unavailable") || "Unavailable",
       });
     } finally {
       setLoadingWeather(false);
     }
   };
 
+  useEffect(() => {
+    if (!hasFetchedWeather.current) {
+      hasFetchedWeather.current = true;
+      fetchWeather();
+    }
+  }, []);
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: bg }}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
     >
-      <Text style={{ fontSize: 16, color: subText, marginTop: 10 }}>
-        {t("hello_farmer")}
+      <Text style={{ fontSize: 16, color: subText, marginTop: 0 }}>
+        {t("Hello Farmer!")}
       </Text>
 
       <Text
@@ -82,10 +96,9 @@ export default function HomeScreen({ navigation, currentTheme }) {
           color: text,
         }}
       >
-        {t("dashboard_title")}
+        {t("Dashboard")}
       </Text>
 
-      {/* WEATHER CARD */}
       <View
         style={{
           backgroundColor: cardBg,
@@ -95,24 +108,23 @@ export default function HomeScreen({ navigation, currentTheme }) {
         }}
       >
         <Text style={{ fontSize: 18, fontWeight: "bold", color: text }}>
-          🌤 {t("today_weather")}
+          🌤 {t("Today's Weather")}
         </Text>
 
         {loadingWeather ? (
           <View style={{ marginTop: 10 }}>
             <ActivityIndicator size="small" color="#2E7D32" />
             <Text style={{ marginTop: 6, color: subText }}>
-              Loading weather...
+              {t("loading_weather") || "Loading weather..."}
             </Text>
           </View>
         ) : (
           <Text style={{ marginTop: 6, color: weatherError ? "red" : subText }}>
-            {weather.city} • {weather.temperature}°C • Humidity{" "}
+            {weather.city} • {weather.temperature}°C • {t("humidity")}{" "}
             {weather.humidity}% • {weather.condition}
           </Text>
         )}
 
-        {/* Refresh Weather Button */}
         <TouchableOpacity
           style={{
             marginTop: 12,
@@ -124,21 +136,20 @@ export default function HomeScreen({ navigation, currentTheme }) {
           onPress={fetchWeather}
         >
           <Text style={{ color: "#fff", fontWeight: "bold" }}>
-            Refresh Weather
+            {t("refresh_weather") || "Refresh Weather"}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* MAIN CARDS */}
       <TouchableOpacity
         style={cardStyle(isDark ? "#1B5E20" : "#E8F5E9")}
         onPress={() => navigation.navigate("CropRecommendation")}
       >
         <Text style={[cardTitle, { color: isDark ? "#fff" : "#111" }]}>
-          🌱 {t("crop_recommendation")}
+          {t("Crop Recommendation")}
         </Text>
         <Text style={[cardSub, { color: isDark ? "#ddd" : "#666" }]}>
-          {t("crop_recommendation_desc")}
+          {t("Crop which you can grow in your field.")}
         </Text>
       </TouchableOpacity>
 
@@ -147,10 +158,10 @@ export default function HomeScreen({ navigation, currentTheme }) {
         onPress={() => navigation.navigate("DiseaseDetection")}
       >
         <Text style={[cardTitle, { color: isDark ? "#fff" : "#111" }]}>
-          🍃 {t("disease_detection")}
+          {t("Disease Detection")}
         </Text>
         <Text style={[cardSub, { color: isDark ? "#ddd" : "#666" }]}>
-          {t("disease_detection_desc")}
+          {t("Check which disease is affecting your crop.")}
         </Text>
       </TouchableOpacity>
 
@@ -159,14 +170,13 @@ export default function HomeScreen({ navigation, currentTheme }) {
         onPress={() => navigation.navigate("Irrigation")}
       >
         <Text style={[cardTitle, { color: isDark ? "#fff" : "#111" }]}>
-          💧 {t("irrigation_advisory")}
+          {t("Irrigation Advisory")}
         </Text>
         <Text style={[cardSub, { color: isDark ? "#ddd" : "#666" }]}>
-          {t("irrigation_desc")}
+          {t("Get schedule when to water your crops.")}
         </Text>
       </TouchableOpacity>
 
-      {/* QUICK ACCESS */}
       <Text
         style={{
           fontSize: 20,
@@ -176,16 +186,14 @@ export default function HomeScreen({ navigation, currentTheme }) {
           marginBottom: 12,
         }}
       >
-        {t("quick_access")}
+        {t("Quick Access")}
       </Text>
 
       <TouchableOpacity
         style={[smallBtn, { backgroundColor: cardBg }]}
         onPress={() => navigation.navigate("History")}
       >
-        <Text style={[smallBtnText, { color: text }]}>
-          📜 {t("view_history")}
-        </Text>
+        <Text style={[smallBtnText, { color: text }]}>{t("View History")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -193,7 +201,7 @@ export default function HomeScreen({ navigation, currentTheme }) {
         onPress={() => navigation.navigate("About")}
       >
         <Text style={[smallBtnText, { color: text }]}>
-          ℹ {t("about_project")}
+          {t("About Project")}
         </Text>
       </TouchableOpacity>
 
@@ -201,7 +209,7 @@ export default function HomeScreen({ navigation, currentTheme }) {
         style={[smallBtn, { backgroundColor: cardBg }]}
         onPress={() => navigation.navigate("Settings")}
       >
-        <Text style={[smallBtnText, { color: text }]}>⚙ {t("settings")}</Text>
+        <Text style={[smallBtnText, { color: text }]}>{t("Settings")}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

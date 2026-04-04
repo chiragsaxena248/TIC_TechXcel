@@ -4,8 +4,8 @@ import {
   NavigationContainer,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
-import { Appearance } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { useColorScheme } from "react-native";
 import "react-native-gesture-handler";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -25,40 +25,51 @@ import SplashScreen from "./screens/SplashScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const systemTheme = useColorScheme();
+
   const [theme, setTheme] = useState("system");
   const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadAppSettings = async () => {
       try {
         const savedLang = await AsyncStorage.getItem("appLanguage");
         const savedTheme = await AsyncStorage.getItem("appTheme");
 
-        if (savedLang) {
+        if (savedLang && isMounted && i18n.language !== savedLang) {
           await i18n.changeLanguage(savedLang);
         }
 
-        if (savedTheme) {
+        if (savedTheme && isMounted) {
           setTheme(savedTheme);
         }
       } catch (e) {
         console.log("App settings load error:", e);
       } finally {
-        setIsAppReady(true);
+        if (isMounted) {
+          setIsAppReady(true);
+        }
       }
     };
 
     loadAppSettings();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // ✅ Prevent early render
+  const effectiveTheme = useMemo(() => {
+    return theme === "system" ? systemTheme || "light" : theme;
+  }, [theme, systemTheme]);
+
+  const navTheme = useMemo(() => {
+    return effectiveTheme === "dark" ? DarkTheme : DefaultTheme;
+  }, [effectiveTheme]);
+
   if (!isAppReady) return null;
-
-  // ✅ Handle system theme properly
-  const systemTheme = Appearance.getColorScheme();
-  const effectiveTheme = theme === "system" ? systemTheme || "light" : theme;
-
-  const navTheme = effectiveTheme === "dark" ? DarkTheme : DefaultTheme;
 
   return (
     <NavigationContainer theme={navTheme}>
@@ -117,7 +128,8 @@ export default function App() {
           {(props) => (
             <SettingsScreen
               {...props}
-              currentTheme={theme} // keep original
+              currentTheme={effectiveTheme}
+              selectedTheme={theme}
               setTheme={setTheme}
             />
           )}

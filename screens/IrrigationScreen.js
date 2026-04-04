@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getIrrigationAdvice } from "../src/services/api";
 
 export default function IrrigationScreen({ currentTheme }) {
   const { t } = useTranslation();
@@ -49,32 +50,13 @@ export default function IrrigationScreen({ currentTheme }) {
     try {
       setLoading(true);
 
-      // 🔥 API CALL STARTS HERE
-      const response = await fetch("YOUR_API_URL_HERE", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("API request failed");
-      }
-
-      const data = await response.json();
-
-      // Expected backend response:
-      // {
-      //   irrigationAdvice: "Water every 3 days",
-      //   waterSavingTip: "Use drip irrigation",
-      //   urgency: "Medium"
-      // }
+      const data = await getIrrigationAdvice(payload);
 
       setResult({
         irrigationAdvice: data.irrigationAdvice || "",
         waterSavingTip: data.waterSavingTip || "",
         urgency: data.urgency || "N/A",
+        weather: data.weather || null,
       });
     } catch (error) {
       console.error("Irrigation API Error:", error);
@@ -92,8 +74,9 @@ export default function IrrigationScreen({ currentTheme }) {
       ]}
     >
       <Text style={[styles.title, { color: isDark ? "#81C784" : "#1b5e20" }]}>
-        {t("irrigation_advisory")}
+        {t("Irrigation Advisory")}
       </Text>
+
       <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#4e6e50" }]}>
         {t("irrigation_sub")}
       </Text>
@@ -101,6 +84,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("land_size")}
       </Text>
+
       <TextInput
         style={[
           styles.input,
@@ -120,6 +104,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("city_area")}
       </Text>
+
       <TextInput
         style={[
           styles.input,
@@ -138,6 +123,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("crop_name")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -166,6 +152,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("water_availability")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -187,6 +174,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("water_source")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -210,6 +198,7 @@ export default function IrrigationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2e7d32" }]}>
         {t("other_water_use")}
       </Text>
+
       <TextInput
         style={[
           styles.input,
@@ -237,6 +226,13 @@ export default function IrrigationScreen({ currentTheme }) {
           <Text style={styles.resultAdvice}>{result.irrigationAdvice}</Text>
           <Text style={styles.resultUrgency}>Urgency: {result.urgency}</Text>
           <Text style={styles.resultTip}>{result.waterSavingTip}</Text>
+
+          {result.weather && (
+            <Text style={styles.resultWeather}>
+              🌤 {result.weather.city} • {result.weather.temperature}°C •
+              Humidity {result.weather.humidity}% • {result.weather.condition}
+            </Text>
+          )}
         </View>
       )}
     </ScrollView>
@@ -322,6 +318,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#444",
     textAlign: "center",
+    lineHeight: 22,
+  },
+  resultWeather: {
+    fontSize: 14,
+    color: "#444",
+    textAlign: "center",
+    marginTop: 12,
     lineHeight: 22,
   },
 });

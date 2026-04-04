@@ -71,10 +71,6 @@ export default function SettingsScreen({ currentTheme, setTheme }) {
         { backgroundColor: isDark ? "#121212" : "#F4F7F3" },
       ]}
     >
-      <Text style={[styles.heading, { color: isDark ? "#81C784" : "#2E7D32" }]}>
-        ⚙ {t("settings")}
-      </Text>
-
       <View
         style={[
           styles.card,
@@ -82,7 +78,7 @@ export default function SettingsScreen({ currentTheme, setTheme }) {
         ]}
       >
         <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#1B5E20" }]}>
-          🌍 {t("language")}
+          {t("Language")}
         </Text>
         <View
           style={[
@@ -113,7 +109,7 @@ export default function SettingsScreen({ currentTheme, setTheme }) {
         ]}
       >
         <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#1B5E20" }]}>
-          🎨 {t("theme")}
+          {t("Theme")}
         </Text>
         <View
           style={[
@@ -143,7 +139,7 @@ export default function SettingsScreen({ currentTheme, setTheme }) {
         ]}
       >
         <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#1B5E20" }]}>
-          ℹ {t("app_info")}
+          {t("App Info")}
         </Text>
         <Text style={[styles.infoText, { color: isDark ? "#ddd" : "#333" }]}>
           App Name: AgriSaarthi AI

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { predictCrop } from "../src/services/api";
 
 export default function CropRecommendationScreen({ currentTheme }) {
   const { t } = useTranslation();
@@ -39,43 +40,23 @@ export default function CropRecommendationScreen({ currentTheme }) {
     try {
       setLoading(true);
 
-      // 🔥 API CALL STARTS HERE
-      const response = await fetch("YOUR_API_URL_HERE", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          landSize: Number(landSize),
-          city: city.trim(),
-          season,
-          waterFacility,
-          soilType,
-          demandCrop,
-        }),
-      });
+      const payload = {
+        landSize: Number(landSize),
+        city: city.trim(),
+        season,
+        waterFacility,
+        soilType,
+        demandCrop,
+      };
 
-      if (!response.ok) {
-        throw new Error("API request failed");
-      }
-
-      const data = await response.json();
-
-      // Expected backend response format:
-      // {
-      //   crop: "Wheat",
-      //   confidence: "90%",
-      //   reason: "Suitable due to soil and season"
-      // }
-
-      setResult({
-        crop: data.crop,
-        confidence: data.confidence || "N/A",
-        reason: data.reason || "",
-      });
+      const resultData = await predictCrop(payload);
+      setResult(resultData);
     } catch (error) {
       console.error("API Error:", error);
-      Alert.alert("Error", "Failed to fetch recommendation");
+      Alert.alert(
+        t("error") || "Error",
+        t("error_fetching_recommendation") || "Failed to fetch recommendation",
+      );
     } finally {
       setLoading(false);
     }
@@ -87,10 +68,7 @@ export default function CropRecommendationScreen({ currentTheme }) {
       contentContainerStyle={{ padding: 20 }}
     >
       <Text style={[styles.title, { color: isDark ? "#81C784" : "#1B5E20" }]}>
-        🌱 {t("crop_recommendation")}
-      </Text>
-      <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#666" }]}>
-        {t("crop_recommendation_sub")}
+        {t("Crop Recommendation")}
       </Text>
 
       <InputField
@@ -111,6 +89,7 @@ export default function CropRecommendationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
         {t("season_question")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -132,6 +111,7 @@ export default function CropRecommendationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
         {t("water_facility")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -153,6 +133,7 @@ export default function CropRecommendationScreen({ currentTheme }) {
       <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
         {t("soil_type")}
       </Text>
+
       <View
         style={[
           styles.pickerWrapper,
@@ -183,7 +164,9 @@ export default function CropRecommendationScreen({ currentTheme }) {
 
       <TouchableOpacity style={styles.button} onPress={handlePredict}>
         <Text style={styles.buttonText}>
-          {loading ? "Loading..." : t("get_recommendation")}
+          {loading
+            ? t("predicting") || "Predicting..."
+            : t("get_recommendation")}
         </Text>
       </TouchableOpacity>
 
@@ -239,10 +222,6 @@ const styles = {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    marginBottom: 24,
   },
   label: {
     fontSize: 15,
