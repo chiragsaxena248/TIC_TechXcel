@@ -1,17 +1,21 @@
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-export default function DiseaseDetectionScreen() {
+export default function DiseaseDetectionScreen({ currentTheme }) {
+  const { t } = useTranslation();
+  const isDark = currentTheme === "dark";
+
   const [image, setImage] = useState(null);
   const [cropName, setCropName] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
@@ -23,10 +27,7 @@ export default function DiseaseDetectionScreen() {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
-        Alert.alert(
-          "Permission Required",
-          "Please allow access to gallery to upload leaf image.",
-        );
+        Alert.alert(t("permission_required"), t("gallery_permission"));
         return;
       }
 
@@ -41,66 +42,85 @@ export default function DiseaseDetectionScreen() {
       }
     } catch (error) {
       console.log("Image Picker Error:", error);
-      Alert.alert("Error", "Could not pick image.");
+      Alert.alert(t("error"), t("could_not_pick_image"));
     }
   };
 
   const handleDetect = () => {
     if (!image || !cropName.trim() || !problemDescription.trim()) {
-      Alert.alert(
-        "Missing Input",
-        "Please upload an image, enter crop name, and describe the problem.",
-      );
+      Alert.alert(t("missing_input"), t("disease_missing_input"));
       return;
     }
 
-    // Temporary frontend mock result
     setResult({
       disease: "Leaf Spot",
       confidence: "95%",
-      solution:
-        "Use a copper-based fungicide and avoid overhead watering. Remove infected leaves if possible.",
+      solution: t("disease_solution"),
     });
 
     Alert.alert(
-      "Detection Input Submitted",
-      `Crop: ${cropName}\nProblem: ${problemDescription}`,
+      t("detection_submitted"),
+      `${t("crop_name")}: ${cropName}\n${t("problem")}: ${problemDescription}`,
     );
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>🍃 Disease Detection</Text>
-      <Text style={styles.subtitle}>
-        Upload a crop image and describe the issue for better disease detection.
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#F8FAF7" },
+      ]}
+    >
+      <Text style={[styles.title, { color: isDark ? "#81C784" : "#1B5E20" }]}>
+        🍃 {t("disease_detection")}
+      </Text>
+      <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#4e6e50" }]}>
+        {t("disease_detection_sub")}
       </Text>
 
-      {/* IMAGE UPLOAD */}
       <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImage}>
         <Text style={styles.imagePickerText}>
-          {image ? "Change Crop Image" : "Upload Crop Image"}
+          {image ? t("change_crop_image") : t("upload_crop_image")}
         </Text>
       </TouchableOpacity>
 
-      {/* IMAGE PREVIEW */}
       {image && (
         <Image source={{ uri: image.uri }} style={styles.previewImage} />
       )}
 
-      {/* CROP NAME BELOW IMAGE */}
-      <Text style={styles.label}>Crop Name</Text>
+      <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2E7D32" }]}>
+        {t("crop_name")}
+      </Text>
       <TextInput
-        style={styles.input}
-        placeholder="e.g. Tomato, Wheat, Cotton"
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1E1E1E" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#A5D6A7",
+          },
+        ]}
+        placeholder={t("crop_name_placeholder")}
+        placeholderTextColor={isDark ? "#888" : "#999"}
         value={cropName}
         onChangeText={setCropName}
       />
 
-      {/* DESCRIPTION BELOW CROP NAME */}
-      <Text style={styles.label}>Describe the Problem</Text>
+      <Text style={[styles.label, { color: isDark ? "#A5D6A7" : "#2E7D32" }]}>
+        {t("describe_problem")}
+      </Text>
       <TextInput
-        style={[styles.input, styles.multilineInput]}
-        placeholder="e.g. Leaves are turning yellow and have brown spots"
+        style={[
+          styles.input,
+          styles.multilineInput,
+          {
+            backgroundColor: isDark ? "#1E1E1E" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#A5D6A7",
+          },
+        ]}
+        placeholder={t("problem_placeholder")}
+        placeholderTextColor={isDark ? "#888" : "#999"}
         value={problemDescription}
         onChangeText={setProblemDescription}
         multiline
@@ -108,18 +128,16 @@ export default function DiseaseDetectionScreen() {
         textAlignVertical="top"
       />
 
-      {/* BUTTON */}
       <TouchableOpacity style={styles.button} onPress={handleDetect}>
-        <Text style={styles.buttonText}>Detect Disease</Text>
+        <Text style={styles.buttonText}>{t("detect_disease")}</Text>
       </TouchableOpacity>
 
-      {/* RESULT */}
       {result && (
         <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>🩺 Detection Result</Text>
+          <Text style={styles.resultTitle}>🩺 {t("detection_result")}</Text>
           <Text style={styles.resultDisease}>{result.disease}</Text>
           <Text style={styles.resultConfidence}>
-            Confidence: {result.confidence}
+            {t("confidence")}: {result.confidence}
           </Text>
           <Text style={styles.resultSolution}>{result.solution}</Text>
         </View>
@@ -131,20 +149,17 @@ export default function DiseaseDetectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F8FAF7",
     padding: 20,
     paddingTop: 30,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1B5E20",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 15,
-    color: "#4e6e50",
     textAlign: "center",
     marginBottom: 24,
   },
@@ -171,14 +186,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2E7D32",
     marginBottom: 8,
     marginTop: 6,
   },
   input: {
-    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#A5D6A7",
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 14,
