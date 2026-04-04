@@ -1,15 +1,19 @@
 import { Picker } from "@react-native-picker/picker";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    Alert,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-export default function CropRecommendationScreen() {
+export default function CropRecommendationScreen({ currentTheme }) {
+  const { t } = useTranslation();
+  const isDark = currentTheme === "dark";
+
   const [landSize, setLandSize] = useState("");
   const [city, setCity] = useState("");
   const [season, setSeason] = useState("");
@@ -27,7 +31,7 @@ export default function CropRecommendationScreen() {
       !soilType ||
       !demandCrop
     ) {
-      Alert.alert("Missing Fields", "Please fill all the input fields.");
+      Alert.alert(t("missing_fields"), t("fill_all_fields"));
       return;
     }
 
@@ -40,35 +44,29 @@ export default function CropRecommendationScreen() {
       (soilType === "black" || soilType === "alluvial")
     ) {
       recommendedCrop = "Rice";
-      reason =
-        "Kharif season with strong water availability and fertile soil is suitable for rice.";
+      reason = t("crop_reason_rice");
     } else if (
       season === "rabi" &&
       waterFacility !== "below_average" &&
       (soilType === "loamy" || soilType === "alluvial")
     ) {
       recommendedCrop = "Wheat";
-      reason =
-        "Rabi season with decent irrigation and fertile soil supports wheat cultivation well.";
+      reason = t("crop_reason_wheat");
     } else if (
       waterFacility === "below_average" &&
       (soilType === "sandy" || soilType === "red")
     ) {
       recommendedCrop = "Millet";
-      reason =
-        "Low water conditions and lighter soils are better suited for low-water crops like millet.";
+      reason = t("crop_reason_millet");
     } else if (parseFloat(landSize) < 5 && waterFacility !== "below_average") {
       recommendedCrop = "Vegetables";
-      reason =
-        "Smaller land with manageable irrigation can be more profitable with vegetables.";
+      reason = t("crop_reason_vegetables");
     } else if (demandCrop.toLowerCase().includes("soybean")) {
       recommendedCrop = "Soybean";
-      reason =
-        "Soybean demand in your area makes it a practical and market-friendly option.";
+      reason = t("crop_reason_soybean");
     } else {
       recommendedCrop = demandCrop;
-      reason =
-        "Based on your farm conditions and local market demand, this crop looks suitable.";
+      reason = t("crop_reason_general");
     }
 
     setResult({
@@ -80,72 +78,114 @@ export default function CropRecommendationScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#F8FAF7" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#121212" : "#F8FAF7" }}
       contentContainerStyle={{ padding: 20 }}
     >
-      <Text style={styles.title}>🌱 Crop Recommendation</Text>
-      <Text style={styles.subtitle}>
-        Enter your farm details to get the best crop suggestion.
+      <Text style={[styles.title, { color: isDark ? "#81C784" : "#1B5E20" }]}>
+        🌱 {t("crop_recommendation")}
+      </Text>
+      <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#666" }]}>
+        {t("crop_recommendation_sub")}
       </Text>
 
       <InputField
-        label="Land Size (in acres)"
+        label={t("land_size")}
         value={landSize}
         onChangeText={setLandSize}
         keyboardType="numeric"
+        isDark={isDark}
       />
 
-      <InputField label="City / Area" value={city} onChangeText={setCity} />
+      <InputField
+        label={t("city_area")}
+        value={city}
+        onChangeText={setCity}
+        isDark={isDark}
+      />
 
-      <Text style={styles.label}>Which season are you asking for?</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={season} onValueChange={setSeason}>
-          <Picker.Item label="Select season" value="" />
-          <Picker.Item label="Kharif" value="kharif" />
-          <Picker.Item label="Rabi" value="rabi" />
-          <Picker.Item label="Zaid" value="zaid" />
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        {t("season_question")}
+      </Text>
+      <View
+        style={[
+          styles.pickerWrapper,
+          { backgroundColor: isDark ? "#1E1E1E" : "#fff" },
+        ]}
+      >
+        <Picker
+          selectedValue={season}
+          onValueChange={setSeason}
+          style={{ color: isDark ? "#fff" : "#000" }}
+        >
+          <Picker.Item label={t("select_season")} value="" />
+          <Picker.Item label={t("kharif")} value="kharif" />
+          <Picker.Item label={t("rabi")} value="rabi" />
+          <Picker.Item label={t("zaid")} value="zaid" />
         </Picker>
       </View>
 
-      <Text style={styles.label}>Water facility in your area</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={waterFacility} onValueChange={setWaterFacility}>
-          <Picker.Item label="Select water availability" value="" />
-          <Picker.Item label="Below Average" value="below_average" />
-          <Picker.Item label="Average" value="average" />
-          <Picker.Item label="Above Average" value="above_average" />
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        {t("water_facility")}
+      </Text>
+      <View
+        style={[
+          styles.pickerWrapper,
+          { backgroundColor: isDark ? "#1E1E1E" : "#fff" },
+        ]}
+      >
+        <Picker
+          selectedValue={waterFacility}
+          onValueChange={setWaterFacility}
+          style={{ color: isDark ? "#fff" : "#000" }}
+        >
+          <Picker.Item label={t("select_water_availability")} value="" />
+          <Picker.Item label={t("below_average")} value="below_average" />
+          <Picker.Item label={t("average")} value="average" />
+          <Picker.Item label={t("above_average")} value="above_average" />
         </Picker>
       </View>
 
-      <Text style={styles.label}>Soil type in your area</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={soilType} onValueChange={setSoilType}>
-          <Picker.Item label="Select soil type" value="" />
-          <Picker.Item label="Black Soil" value="black" />
-          <Picker.Item label="Red Soil" value="red" />
-          <Picker.Item label="Alluvial Soil" value="alluvial" />
-          <Picker.Item label="Sandy Soil" value="sandy" />
-          <Picker.Item label="Clay Soil" value="clay" />
-          <Picker.Item label="Loamy Soil" value="loamy" />
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        {t("soil_type")}
+      </Text>
+      <View
+        style={[
+          styles.pickerWrapper,
+          { backgroundColor: isDark ? "#1E1E1E" : "#fff" },
+        ]}
+      >
+        <Picker
+          selectedValue={soilType}
+          onValueChange={setSoilType}
+          style={{ color: isDark ? "#fff" : "#000" }}
+        >
+          <Picker.Item label={t("select_soil_type")} value="" />
+          <Picker.Item label={t("black_soil")} value="black" />
+          <Picker.Item label={t("red_soil")} value="red" />
+          <Picker.Item label={t("alluvial_soil")} value="alluvial" />
+          <Picker.Item label={t("sandy_soil")} value="sandy" />
+          <Picker.Item label={t("clay_soil")} value="clay" />
+          <Picker.Item label={t("loamy_soil")} value="loamy" />
         </Picker>
       </View>
 
       <InputField
-        label="Most in-demand crop in your area"
+        label={t("demand_crop")}
         value={demandCrop}
         onChangeText={setDemandCrop}
+        isDark={isDark}
       />
 
       <TouchableOpacity style={styles.button} onPress={handlePredict}>
-        <Text style={styles.buttonText}>Get Recommendation</Text>
+        <Text style={styles.buttonText}>{t("get_recommendation")}</Text>
       </TouchableOpacity>
 
       {result && (
         <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>🌾 Recommended Crop</Text>
+          <Text style={styles.resultTitle}>🌾 {t("recommended_crop")}</Text>
           <Text style={styles.resultCrop}>{result.crop}</Text>
           <Text style={styles.resultConfidence}>
-            Confidence: {result.confidence}
+            {t("confidence")}: {result.confidence}
           </Text>
           <Text style={styles.resultReason}>{result.reason}</Text>
         </View>
@@ -154,13 +194,31 @@ export default function CropRecommendationScreen() {
   );
 }
 
-function InputField({ label, value, onChangeText, keyboardType = "default" }) {
+function InputField({
+  label,
+  value,
+  onChangeText,
+  keyboardType = "default",
+  isDark,
+}) {
+  const { t } = useTranslation();
+
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        {label}
+      </Text>
       <TextInput
-        style={styles.input}
-        placeholder={`Enter ${label}`}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1E1E1E" : "white",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#DDE5DD",
+          },
+        ]}
+        placeholder={`${t("enter")} ${label}`}
+        placeholderTextColor={isDark ? "#888" : "#999"}
         keyboardType={keyboardType}
         value={value}
         onChangeText={onChangeText}
@@ -174,29 +232,23 @@ const styles = {
     fontSize: 28,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#1B5E20",
   },
   subtitle: {
     fontSize: 15,
-    color: "#666",
     marginBottom: 24,
   },
   label: {
     fontSize: 15,
     fontWeight: "600",
     marginBottom: 6,
-    color: "#333",
   },
   input: {
-    backgroundColor: "white",
     borderRadius: 14,
     padding: 14,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#DDE5DD",
   },
   pickerWrapper: {
-    backgroundColor: "white",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "#DDE5DD",

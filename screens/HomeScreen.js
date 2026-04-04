@@ -1,9 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-export default function HomeScreen({ navigation, currentTheme }) {
+export default function HomeScreen({ navigation }) {
   const { t } = useTranslation();
-  const isDark = currentTheme === "dark";
+
+  // Temporary default theme until full theme system is added
+  const isDark = false;
 
   const bg = isDark ? "#121212" : "#F8FAF7";
   const cardBg = isDark ? "#1E1E1E" : "#ffffff";
@@ -114,7 +116,10 @@ export default function HomeScreen({ navigation, currentTheme }) {
 
       <TouchableOpacity
         style={[smallBtn, { backgroundColor: cardBg }]}
-        onPress={() => navigation.navigate("Settings")}
+        onPress={() => {
+          console.log("Settings button pressed");
+          navigation.navigate("Settings");
+        }}
       >
         <Text style={[smallBtnText, { color: text }]}>⚙ {t("settings")}</Text>
       </TouchableOpacity>

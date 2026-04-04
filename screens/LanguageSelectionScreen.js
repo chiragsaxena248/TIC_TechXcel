@@ -1,14 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    useColorScheme,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
 } from "react-native";
-import i18n from "../src/i18n";
+import i18n from "../i18n";
 
 export default function LanguageSelectionScreen({ navigation }) {
+  const { t } = useTranslation();
   const systemScheme = useColorScheme();
   const [selectedLang, setSelectedLang] = useState("en");
 
@@ -84,7 +86,7 @@ export default function LanguageSelectionScreen({ navigation }) {
           marginBottom: 8,
         }}
       >
-        Choose Your Language
+        {t("choose_language")}
       </Text>
 
       <Text
@@ -95,7 +97,7 @@ export default function LanguageSelectionScreen({ navigation }) {
           marginBottom: 28,
         }}
       >
-        अपनी भाषा चुनें / ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ / तुमची भाषा निवडा
+        {t("choose_language_sub")}
       </Text>
 
       <OptionButton label="English" code="en" />
@@ -120,7 +122,7 @@ export default function LanguageSelectionScreen({ navigation }) {
             textAlign: "center",
           }}
         >
-          Continue
+          {t("continue")}
         </Text>
       </TouchableOpacity>
     </ScrollView>

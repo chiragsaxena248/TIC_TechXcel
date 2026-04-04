@@ -1,11 +1,19 @@
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 
-export default function AboutScreen() {
+export default function AboutScreen({ currentTheme }) {
+  const { t } = useTranslation();
+  const isDark = currentTheme === "dark";
+
   return (
-    <View style={screenStyle}>
-      <Text style={screenTitle}>ℹ About AgriSaarthi AI</Text>
-      <Text style={screenText}>
-        This screen will show your project idea and team details.
+    <View
+      style={[screenStyle, { backgroundColor: isDark ? "#121212" : "#F8FAF7" }]}
+    >
+      <Text style={[screenTitle, { color: isDark ? "#fff" : "#111" }]}>
+        ℹ {t("about_title")}
+      </Text>
+      <Text style={[screenText, { color: isDark ? "#bbbbbb" : "#666" }]}>
+        {t("about_desc")}
       </Text>
     </View>
   );
@@ -16,17 +24,16 @@ const screenStyle = {
   justifyContent: "center",
   alignItems: "center",
   padding: 24,
-  backgroundColor: "#F8FAF7",
 };
 
 const screenTitle = {
   fontSize: 28,
   fontWeight: "bold",
   marginBottom: 12,
+  textAlign: "center",
 };
 
 const screenText = {
   fontSize: 16,
-  color: "#666",
   textAlign: "center",
 };

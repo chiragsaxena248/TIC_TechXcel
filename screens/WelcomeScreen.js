@@ -1,18 +1,29 @@
+import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function WelcomeScreen({ navigation }) {
+export default function WelcomeScreen({ navigation, currentTheme }) {
+  const { t } = useTranslation();
+  const isDark = currentTheme === "dark";
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to AgriSaarthi AI</Text>
-      <Text style={styles.subtitle}>
-        Empowering farmers with smart crop, irrigation and disease guidance.
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#F4FFF3" },
+      ]}
+    >
+      <Text style={[styles.title, { color: isDark ? "#81C784" : "#1B5E20" }]}>
+        {t("welcome_title")}
+      </Text>
+      <Text style={[styles.subtitle, { color: isDark ? "#ccc" : "#4E6E50" }]}>
+        {t("welcome_subtitle")}
       </Text>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.replace("Home")}
       >
-        <Text style={styles.buttonText}>Get Started</Text>
+        <Text style={styles.buttonText}>{t("get_started")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -21,7 +32,6 @@ export default function WelcomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4FFF3",
     justifyContent: "center",
     alignItems: "center",
     padding: 25,
@@ -29,12 +39,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1B5E20",
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#4E6E50",
     textAlign: "center",
     marginTop: 15,
     marginBottom: 35,

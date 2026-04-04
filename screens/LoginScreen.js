@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Alert,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,138 +12,127 @@ export default function LoginScreen({ navigation }) {
   const [mobileNumber, setMobileNumber] = useState("");
   const [password, setPassword] = useState("");
 
+  // Indian mobile validation
+  const validateMobile = (mobile) => {
+    const mobileRegex = /^[6-9]\d{9}$/;
+    return mobileRegex.test(mobile);
+  };
+
+  // Password validation
+  const validatePassword = (pass) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    return passwordRegex.test(pass);
+  };
+
   const handleLogin = () => {
-    if (!mobileNumber.trim() || !password.trim()) {
-      Alert.alert("Missing Fields", "Please enter mobile number and password.");
+    if (!mobileNumber.trim()) {
+      Alert.alert("Invalid Mobile Number", "Mobile number is required.");
       return;
     }
 
-    if (mobileNumber.length < 10) {
+    if (!validateMobile(mobileNumber.trim())) {
       Alert.alert(
         "Invalid Mobile Number",
-        "Please enter a valid mobile number.",
+        "Enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.",
       );
       return;
     }
 
-    Alert.alert("Login Successful", "Welcome to AgriSaarthi AI!");
+    if (!password.trim()) {
+      Alert.alert("Invalid Password", "Password is required.");
+      return;
+    }
+
+    if (!validatePassword(password.trim())) {
+      Alert.alert(
+        "Invalid Password",
+        "Password must be at least 6 characters and contain at least 1 letter and 1 number.",
+      );
+      return;
+    }
+
+    // ✅ If valid, go to Home screen
     navigation.replace("Home");
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.logo}>🌾</Text>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>
-        Login to continue using AgriSaarthi AI
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Mobile Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter mobile number"
-          placeholderTextColor="#777"
-          keyboardType="phone-pad"
-          maxLength={10}
-          value={mobileNumber}
-          onChangeText={setMobileNumber}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter mobile number"
+        value={mobileNumber}
+        onChangeText={(text) => setMobileNumber(text.replace(/[^0-9]/g, ""))}
+        keyboardType="number-pad"
+        maxLength={10}
+      />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter password"
-          placeholderTextColor="#777"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
 
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginBtnText}>Login</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
 
-        {/* ✅ FIXED SIGNUP BUTTON */}
-        <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-          <Text style={styles.signupText}>
-            Don’t have an account?{" "}
-            <Text style={styles.signupLink}>Sign Up</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      {/* Go to Signup */}
+      <TouchableOpacity
+        style={styles.signupButton}
+        onPress={() => navigation.navigate("Signup")}
+      >
+        <Text style={styles.signupText}>Don’t have an account? Sign Up</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: "#F4FFF3",
+    flex: 1,
     justifyContent: "center",
     padding: 24,
-  },
-  logo: {
-    fontSize: 64,
-    textAlign: "center",
-    marginBottom: 10,
+    backgroundColor: "#fff",
   },
   title: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#1B5E20",
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#4E6E50",
-    textAlign: "center",
-    marginTop: 8,
     marginBottom: 30,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 22,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1B5E20",
-    marginBottom: 8,
-    marginTop: 12,
+    textAlign: "center",
+    color: "#2E7D32",
   },
   input: {
-    backgroundColor: "#F9FFF8",
-    borderWidth: 2,
-    borderColor: "#A5D6A7",
-    borderRadius: 14,
-    paddingHorizontal: 15,
-    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
-    color: "#111",
-  },
-  loginBtn: {
-    backgroundColor: "#1B5E20",
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 24,
     marginBottom: 18,
+    backgroundColor: "#F9F9F9",
   },
-  loginBtnText: {
+  button: {
+    backgroundColor: "#2E7D32",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
+  },
+  signupButton: {
+    marginTop: 20,
+    alignItems: "center",
   },
   signupText: {
-    textAlign: "center",
-    fontSize: 15,
-    color: "#555",
-  },
-  signupLink: {
     color: "#2E7D32",
-    fontWeight: "bold",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
